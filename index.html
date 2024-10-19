@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحويل نص إلى صورة</title>
+</head>
+<body>
+    <h1>تحويل نص إلى صورة أو فيديو</h1>
+    <textarea id="textInput" placeholder="أدخل نصك هنا"></textarea>
+    <button id="generateImage">إنشاء صورة</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('generateImage').onclick = function() {
+            const text = document.getElementById('textInput').value;
+
+            fetch('/generate-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: text }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = `<img src="${data.image_url}" alt="Generated Image">`;
+            });
+        };
+    </script>
+</body>
+</html>

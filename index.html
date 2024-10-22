@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تحويل الصوت إلى نص مع الترجمة</title>
+  <title>تحويل الصوت إلى نص وترجمته</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -34,19 +34,17 @@
 </head>
 <body>
 
-  <h1>تحويل الصوت إلى نص مع الترجمة</h1>
-  <button onclick="startRecognition()">ابدأ الترجمة الصوتية</button>
-  
-  <h3>النص المحول:</h3>
-  <div id="transcription">النص سيظهر هنا...</div>
-  
-  <h3>ترجمة النص:</h3>
-  <select id="languageSelect" onchange="translateText()">
+  <h1>تحويل الصوت إلى نص وترجمته</h1>
+  <select id="languageSelect" onchange="startRecognition()">
     <option value="ar">العربية</option>
     <option value="en">الإنجليزية</option>
     <option value="fr">الفرنسية</option>
   </select>
+
+  <h3>النص المحول:</h3>
+  <div id="transcription">النص سيظهر هنا...</div>
   
+  <h3>ترجمة النص:</h3>
   <div id="translation">الترجمة ستظهر هنا...</div>
 
   <script>
@@ -56,24 +54,33 @@
     let recognition;
 
     function startRecognition() {
+      // التأكد من دعم المتصفح لـ Web Speech API
       if (!('webkitSpeechRecognition' in window)) {
         alert("متصفحك لا يدعم التعرف على الكلام.");
         return;
       }
 
+      // إذا كان هناك جلسة استماع جارية، نقوم بإيقافها
+      if (recognition) {
+        recognition.abort();
+      }
+
       recognition = new webkitSpeechRecognition();
-      recognition.lang = 'ar';
+      recognition.lang = 'ar'; // اللغة الافتراضية هي العربية للتعرف على الكلام
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         transcriptionElement.innerHTML = "الاستماع جارٍ...";
+        translationElement.innerHTML = "الترجمة ستظهر هنا...";
       };
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         transcriptionElement.innerHTML = transcript;
-        translateText(); // بعد كتابة النص، قم بترجمته
+
+        // الترجمة بناءً على اللغة المختارة
+        translateText(transcript, languageSelect.value);
       };
 
       recognition.onerror = (event) => {
@@ -87,19 +94,15 @@
       recognition.start();
     }
 
-    // ترجمة النص بناءً على اللغة المختارة
-    function translateText() {
-      const text = transcriptionElement.innerText;
-      const selectedLanguage = languageSelect.value;
-
-      // هذا مثال للترجمة اليدوية للغات الثلاث
+    // دالة لترجمة النص بناءً على اللغة المختارة
+    function translateText(text, selectedLanguage) {
       let translations = {
-        'ar': text, // النص الأصلي
-        'en': 'This is an English translation of the text: ' + text, // النص الإنجليزي
-        'fr': 'Ceci est une traduction en français du texte: ' + text // النص الفرنسي
+        'ar': text, // النص الأصلي بالعربية
+        'en': 'This is the English translation of: ' + text, // الترجمة الإنجليزية
+        'fr': 'Ceci est la traduction en français de: ' + text // الترجمة الفرنسية
       };
 
-      // تحديث حقل الترجمة
+      // تحديث النص المترجم في الصفحة
       translationElement.innerHTML = translations[selectedLanguage];
     }
   </script>

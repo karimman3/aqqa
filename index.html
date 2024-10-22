@@ -3,16 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تحميل الصوت وتحويله إلى نص</title>
+  <title>تحويل الصوت إلى نص بسرعة</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       margin: 0;
       padding: 20px;
-    }
-    #audioContainer {
-      margin-top: 20px;
     }
     #transcription {
       margin-top: 20px;
@@ -25,64 +22,47 @@
 </head>
 <body>
 
-  <h1>تحميل الصوت وتحويله إلى نص</h1>
-  <input type="file" id="audioFile" accept="audio/*">
-  <button onclick="processAudio()">تحميل وتحويل الصوت</button>
-
-  <div id="audioContainer"></div>
+  <h1>تحويل الصوت إلى نص باستخدام الميكروفون</h1>
+  <button onclick="startRecognition()">ابدأ الترجمة الصوتية</button>
   
   <h3>النص المحول:</h3>
   <div id="transcription">النص سيظهر هنا...</div>
 
   <script>
-    let audioURL;
-    
-    function processAudio() {
-      const fileInput = document.getElementById('audioFile');
-      const transcription = document.getElementById('transcription');
-      const audioContainer = document.getElementById('audioContainer');
+    const transcriptionElement = document.getElementById('transcription');
+    let recognition;
 
-      if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        
-        // عرض مشغل الصوت
-        audioURL = URL.createObjectURL(file);
-        audioContainer.innerHTML = `<audio controls src="${audioURL}"></audio>`;
-
-        // في هذه المرحلة، يمكنك استخدام واجهة API لتحويل الصوت إلى نص
-        // للتوضيح فقط، سيتم عرض رسالة مزيفة
-        
-        transcription.innerHTML = "يتم معالجة الصوت... (هذه مجرد رسالة للتوضيح)";
-        
-        // مثال لدمج واجهة API لتحويل الصوت إلى نص لاحقًا
-        // sendAudioToAPI(file); // يمكنك إنشاء هذه الوظيفة لربط خدمة سحابية مثل Google Speech-to-Text
-        
-      } else {
-        transcription.innerHTML = "يرجى تحميل ملف صوتي!";
+    function startRecognition() {
+      // التحقق من دعم Web Speech API
+      if (!('webkitSpeechRecognition' in window)) {
+        alert("متصفحك لا يدعم التعرف على الكلام.");
+        return;
       }
-    }
 
-    // يمكن أن يتم استخدام هذه الوظيفة لإرسال الملف إلى خدمة التعرف على الكلام
-    /*
-    function sendAudioToAPI(file) {
-      // مثال على كيفية إرسال الملف لخدمة تحويل الصوت إلى نص
-      const formData = new FormData();
-      formData.append('audio', file);
+      recognition = new webkitSpeechRecognition(); // استخدام Web Speech API
+      recognition.lang = 'ar'; // تعيين اللغة إلى العربية
+      recognition.interimResults = false; // إظهار النتائج النهائية فقط
+      recognition.maxAlternatives = 1;
 
-      fetch('YOUR_API_ENDPOINT', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        transcription.innerHTML = data.transcript; // عرض النص المحول
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        transcription.innerHTML = "حدث خطأ أثناء تحويل الصوت!";
-      });
+      recognition.onstart = () => {
+        transcriptionElement.innerHTML = "الاستماع جارٍ...";
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        transcriptionElement.innerHTML = transcript; // عرض النص المحول
+      };
+
+      recognition.onerror = (event) => {
+        transcriptionElement.innerHTML = "حدث خطأ: " + event.error;
+      };
+
+      recognition.onend = () => {
+        transcriptionElement.innerHTML += "<br>الاستماع انتهى.";
+      };
+
+      recognition.start(); // بدء الاستماع
     }
-    */
   </script>
 
 </body>

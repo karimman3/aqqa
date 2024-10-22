@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تحويل الصوت إلى نص وترجمته</title>
+  <title>تحميل وترجمة الصوت إلى نص</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -34,75 +34,68 @@
 </head>
 <body>
 
-  <h1>تحويل الصوت إلى نص وترجمته</h1>
-  <select id="languageSelect" onchange="startRecognition()">
-    <option value="ar">العربية</option>
-    <option value="en">الإنجليزية</option>
-    <option value="fr">الفرنسية</option>
-  </select>
+  <h1>تحميل وترجمة الصوت إلى نص</h1>
 
+  <!-- زر تحميل الصوت -->
+  <input type="file" id="audioFile" accept="audio/*">
+  <button onclick="handleAudioFile()">تحميل الصوت وترجمته</button>
+  
   <h3>النص المحول:</h3>
   <div id="transcription">النص سيظهر هنا...</div>
   
   <h3>ترجمة النص:</h3>
+  <select id="languageSelect" onchange="translateText()">
+    <option value="ar">العربية</option>
+    <option value="en">الإنجليزية</option>
+    <option value="fr">الفرنسية</option>
+  </select>
+  
   <div id="translation">الترجمة ستظهر هنا...</div>
 
   <script>
     const transcriptionElement = document.getElementById('transcription');
     const translationElement = document.getElementById('translation');
     const languageSelect = document.getElementById('languageSelect');
-    let recognition;
 
-    function startRecognition() {
-      // التأكد من دعم المتصفح لـ Web Speech API
-      if (!('webkitSpeechRecognition' in window)) {
-        alert("متصفحك لا يدعم التعرف على الكلام.");
+    function handleAudioFile() {
+      const audioFile = document.getElementById('audioFile').files[0];
+      if (!audioFile) {
+        alert('يرجى تحميل ملف صوتي.');
         return;
       }
 
-      // إذا كان هناك جلسة استماع جارية، نقوم بإيقافها
-      if (recognition) {
-        recognition.abort();
-      }
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const audioData = event.target.result;
 
-      recognition = new webkitSpeechRecognition();
-      recognition.lang = 'ar'; // اللغة الافتراضية هي العربية للتعرف على الكلام
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
+        // تحويل ملف الصوت إلى نص (تحتاج إلى تكامل مع API مثل Google Speech-to-Text)
+        // هذا مثال بسيط فقط لتحليل الملف
+        transcriptionElement.innerHTML = 'جارٍ تحليل الصوت...';
 
-      recognition.onstart = () => {
-        transcriptionElement.innerHTML = "الاستماع جارٍ...";
-        translationElement.innerHTML = "الترجمة ستظهر هنا...";
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
+        // هنا تقوم بإرسال الملف إلى خدمة سحابية مثل Google لتحليله ثم استدعاء translateText() بعد الحصول على النص
+        // في هذا المثال، يتم افتراض نص معين كإجابة:
+        const transcript = 'نص مفترض لتحليل الصوت'; // يجب أن يكون النص ناتج عن تحليل الملف الصوتي
         transcriptionElement.innerHTML = transcript;
 
-        // الترجمة بناءً على اللغة المختارة
-        translateText(transcript, languageSelect.value);
+        // قم بترجمة النص
+        translateText(transcript);
       };
 
-      recognition.onerror = (event) => {
-        transcriptionElement.innerHTML = "حدث خطأ: " + event.error;
-      };
-
-      recognition.onend = () => {
-        transcriptionElement.innerHTML += "<br>الاستماع انتهى.";
-      };
-
-      recognition.start();
+      reader.readAsDataURL(audioFile);
     }
 
-    // دالة لترجمة النص بناءً على اللغة المختارة
-    function translateText(text, selectedLanguage) {
+    // ترجمة النص بناءً على اللغة المختارة
+    function translateText(transcript) {
+      const selectedLanguage = languageSelect.value;
+
+      // هذا مثال للترجمة اليدوية للغات الثلاث
       let translations = {
-        'ar': text, // النص الأصلي بالعربية
-        'en': 'This is the English translation of: ' + text, // الترجمة الإنجليزية
-        'fr': 'Ceci est la traduction en français de: ' + text // الترجمة الفرنسية
+        'ar': transcript, // النص الأصلي
+        'en': 'This is an English translation of: ' + transcript, // النص الإنجليزي
+        'fr': 'Ceci est une traduction en français de: ' + transcript // النص الفرنسي
       };
 
-      // تحديث النص المترجم في الصفحة
+      // تحديث حقل الترجمة
       translationElement.innerHTML = translations[selectedLanguage];
     }
   </script>

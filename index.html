@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تحويل الصوت إلى نص بسرعة</title>
+  <title>تحويل الصوت إلى نص مع الترجمة</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,30 +18,52 @@
       min-height: 50px;
       background-color: #f4f4f4;
     }
+    #translation {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid black;
+      min-height: 50px;
+      background-color: #e8e8e8;
+    }
+    select {
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
 
-  <h1>تحويل الصوت إلى نص باستخدام الميكروفون</h1>
+  <h1>تحويل الصوت إلى نص مع الترجمة</h1>
   <button onclick="startRecognition()">ابدأ الترجمة الصوتية</button>
   
   <h3>النص المحول:</h3>
   <div id="transcription">النص سيظهر هنا...</div>
+  
+  <h3>ترجمة النص:</h3>
+  <select id="languageSelect" onchange="translateText()">
+    <option value="ar">العربية</option>
+    <option value="en">الإنجليزية</option>
+    <option value="fr">الفرنسية</option>
+  </select>
+  
+  <div id="translation">الترجمة ستظهر هنا...</div>
 
   <script>
     const transcriptionElement = document.getElementById('transcription');
+    const translationElement = document.getElementById('translation');
+    const languageSelect = document.getElementById('languageSelect');
     let recognition;
 
     function startRecognition() {
-      // التحقق من دعم Web Speech API
       if (!('webkitSpeechRecognition' in window)) {
         alert("متصفحك لا يدعم التعرف على الكلام.");
         return;
       }
 
-      recognition = new webkitSpeechRecognition(); // استخدام Web Speech API
-      recognition.lang = 'ar'; // تعيين اللغة إلى العربية
-      recognition.interimResults = false; // إظهار النتائج النهائية فقط
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = 'ar';
+      recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
@@ -50,7 +72,8 @@
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        transcriptionElement.innerHTML = transcript; // عرض النص المحول
+        transcriptionElement.innerHTML = transcript;
+        translateText(); // بعد كتابة النص، قم بترجمته
       };
 
       recognition.onerror = (event) => {
@@ -61,7 +84,23 @@
         transcriptionElement.innerHTML += "<br>الاستماع انتهى.";
       };
 
-      recognition.start(); // بدء الاستماع
+      recognition.start();
+    }
+
+    // ترجمة النص بناءً على اللغة المختارة
+    function translateText() {
+      const text = transcriptionElement.innerText;
+      const selectedLanguage = languageSelect.value;
+
+      // هذا مثال للترجمة اليدوية للغات الثلاث
+      let translations = {
+        'ar': text, // النص الأصلي
+        'en': 'This is an English translation of the text: ' + text, // النص الإنجليزي
+        'fr': 'Ceci est une traduction en français du texte: ' + text // النص الفرنسي
+      };
+
+      // تحديث حقل الترجمة
+      translationElement.innerHTML = translations[selectedLanguage];
     }
   </script>
 
